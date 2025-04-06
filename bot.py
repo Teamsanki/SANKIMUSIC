@@ -2,44 +2,29 @@ from pyrogram import Client, filters, idle
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
 from pytgcalls.types.input_stream import AudioPiped
-from pyrogram.storage import MongoStorage  # Correct import
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
 
 import asyncio
 import requests
-from pymongo import MongoClient  # Required for MongoStorage
 
-# Setup MongoDB storage
-mongo_client = MongoClient(MONGO_DB_URI)
-storage = MongoStorage(mongo_client, db_name="sanki_sessions")
-
-# User Client
+# Setup Pyrogram user client with string session
 user = Client(
-    "sanki_user",
+    name="sanki_user",
     api_id=API_ID,
     api_hash=API_HASH,
-    session_string=None,
-    storage=storage
+    session_string=STRING_SESSION  # from config.py
 )
 
-# VC Client
+# Setup VC client
 vc = PyTgCalls(user)
 
-# Spotify Setup
+# Spotify setup
 sp = Spotify(auth_manager=SpotifyClientCredentials(
     client_id=SPOTIFY_CLIENT_ID,
     client_secret=SPOTIFY_CLIENT_SECRET
 ))
-
-# Bot client (separately defined)
-bot = Client(
-    "sanki_bot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
 
 @bot.on_message(filters.command("start"))
 async def start(_, message):
@@ -89,23 +74,19 @@ async def play(_, message):
     if not preview_url:
         return await message.reply("Spotify preview not available for this song.")
 
-    # Download preview
     response = requests.get(preview_url)
     file_path = f"{title}.mp3"
     with open(file_path, 'wb') as f:
         f.write(response.content)
 
-    chat_id = message.chat.id
-
     try:
         await vc.join_group_call(
-            chat_id,
+            message.chat.id,
             AudioPiped(file_path),
             stream_type='local_stream'
         )
         await message.reply(f"Now Playing: **{title}** by **{artist}**")
 
-        # Logging
         log_text = (
             f"🎶 **Song Played**\n\n"
             f"👤 User: [{message.from_user.first_name}](tg://user?id={message.from_user.id})\n"
@@ -127,12 +108,11 @@ async def end(_, message):
     except Exception as e:
         await message.reply(f"Error: `{e}`")
 
-# Main function
+# Start the bot
 async def main():
     await user.start()
     await vc.start()
     await bot.start()
-
     print("Bot is running...")
     await idle()
 
