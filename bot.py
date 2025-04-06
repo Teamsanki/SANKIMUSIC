@@ -31,6 +31,10 @@ sp = Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, 
 
 @bot.on_message(filters.command("start"))
 async def start(_, message):
+    user = message.from_user
+    log_text = f"✨ **New /start**\n\n👤 Name: [{user.first_name}](tg://user?id={user.id})\n🆔 ID: `{user.id}`"
+    await bot.send_message(LOGGER_GROUP_ID, log_text)
+
     await message.reply_photo(
         photo=TELEGRAPH_PHOTO,
         caption="**Welcome to Sanki Music Bot!**\n\nUse `/play <song>` to play music from Spotify in VC.",
@@ -40,6 +44,26 @@ async def start(_, message):
             [InlineKeyboardButton("Support", url=SUPPORT_LINK)]
         ])
     )
+
+@bot.on_chat_member_updated()
+async def added_to_group(_, chat_member):
+    if chat_member.new_chat_member.user.is_self:
+        chat = chat_member.chat
+        link = f"https://t.me/c/{str(chat.id)[4:]}" if str(chat.id).startswith("-100") else "No Link"
+
+        log_text = f"🚀 **Bot Added to New Group**\n\n🏷️ Group: `{chat.title}`\n🆔 ID: `{chat.id}`\n🔗 Link: {link}"
+        await bot.send_message(LOGGER_GROUP_ID, log_text)
+
+    log_text = (
+        f"🎶 **Song Played**\n\n"
+        f"👤 User: [{message.from_user.first_name}](tg://user?id={message.from_user.id})\n"
+        f"🆔 User ID: `{message.from_user.id}`\n"
+        f"🎵 Song: **{title}** by **{artist}**\n"
+        f"🏷️ Group: `{message.chat.title}`\n"
+        f"🆔 Group ID: `{message.chat.id}`"
+    )
+    await bot.send_message(LOGGER_GROUP_ID, log_text)
+
 
 @bot.on_callback_query(filters.regex("help"))
 async def help_cb(_, query):
