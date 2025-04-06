@@ -6,18 +6,27 @@ from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
 
-import asyncio
 import requests
+import asyncio
+import os
 
-# Setup Pyrogram user client with string session
-user = Client(
+# Define Bot Client
+bot = Client(
     name="sanki_bot",
     api_id=API_ID,
     api_hash=API_HASH,
-    session_string=STRING_SESSION  # from config.py
+    bot_token=BOT_TOKEN
 )
 
-# Setup VC client
+# Define User Client (for joining VC)
+user = Client(
+    name="sanki_user",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    session_string=STRING_SESSION
+)
+
+# PyTgCalls VC setup
 vc = PyTgCalls(user)
 
 # Spotify setup
@@ -26,6 +35,7 @@ sp = Spotify(auth_manager=SpotifyClientCredentials(
     client_secret=SPOTIFY_CLIENT_SECRET
 ))
 
+# /start command
 @bot.on_message(filters.command("start"))
 async def start(_, message):
     user = message.from_user
@@ -42,6 +52,7 @@ async def start(_, message):
         ])
     )
 
+# Group join logging
 @bot.on_chat_member_updated()
 async def added_to_group(_, chat_member):
     if chat_member.new_chat_member.user.is_self:
@@ -51,10 +62,12 @@ async def added_to_group(_, chat_member):
         log_text = f"🚀 **Bot Added to New Group**\n\n🏷️ Group: `{chat.title}`\n🆔 ID: `{chat.id}`\n🔗 Link: {link}"
         await bot.send_message(LOGGER_GROUP_ID, log_text)
 
+# Help button callback
 @bot.on_callback_query(filters.regex("help"))
 async def help_cb(_, query):
     await query.message.edit_text("**Available Commands:**\n\n/play <song name> - Play song from Spotify\n/end - Stop the music")
 
+# /play command
 @bot.on_message(filters.command("play") & filters.group)
 async def play(_, message):
     if len(message.command) < 2:
@@ -74,6 +87,7 @@ async def play(_, message):
     if not preview_url:
         return await message.reply("Spotify preview not available for this song.")
 
+    # Download preview
     response = requests.get(preview_url)
     file_path = f"{title}.mp3"
     with open(file_path, 'wb') as f:
@@ -100,6 +114,7 @@ async def play(_, message):
     except Exception as e:
         await message.reply(f"Failed to join VC: `{e}`")
 
+# /end command
 @bot.on_message(filters.command("end") & filters.group)
 async def end(_, message):
     try:
@@ -108,13 +123,13 @@ async def end(_, message):
     except Exception as e:
         await message.reply(f"Error: `{e}`")
 
-# Start the bot
+# Main runner
 async def main():
     await user.start()
     await vc.start()
     await bot.start()
-    print("Bot is running...")
+    print("Sanki Music Bot is running...")
     await idle()
 
-import asyncio
+# Run the bot
 asyncio.run(main())
