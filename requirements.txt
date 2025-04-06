@@ -1,6 +1,6 @@
 pyrogram==2.0.106
 tgcrypto==1.2.5
-pytgcalls==2.1.0
+py-tgcalls==0.9.7
 spotipy==2.23.0
 requests==2.31.0
 python-dotenv==1.0.1
