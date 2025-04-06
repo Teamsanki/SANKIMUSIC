@@ -4,3 +4,4 @@ py-tgcalls==0.9.7
 spotipy==2.23.0
 requests==2.31.0
 python-dotenv==1.0.1
+pymongo==4.6.1
