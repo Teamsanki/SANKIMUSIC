@@ -11,7 +11,7 @@ import requests
 
 # Setup Pyrogram user client with string session
 user = Client(
-    name="sanki_user",
+    name="sanki_bot",
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=STRING_SESSION  # from config.py
