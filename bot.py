@@ -1,18 +1,27 @@
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import InputStream
-from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types.input_stream import InputStream, AudioPiped
+from pyrogram.storage.mongo_storage import MongoStorage  # REQUIRED for MongoDB session
 from spotipy import Spotify
+from pyrogram.storage.mongo_storage import MongoStorage
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
 
 import asyncio
 import requests
 
-# Bot and User Clients
-bot = Client("sanki_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-user = Client("sanki_user", api_id=API_ID, api_hash=API_HASH, session_string=USER_SESSION)
+# Add this import at the top
+from pyrogram.storage.mongo_storage import MongoStorage
+
+# Updated user client with MongoDB session storage
+user = Client(
+    "sanki_user",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    session_string=None,  # Not using string session anymore
+    storage=MongoStorage(uri=MONGO_DB_URI, database_name="sanki_sessions")
+)
 
 # VC Client
 vc = PyTgCalls(user)
