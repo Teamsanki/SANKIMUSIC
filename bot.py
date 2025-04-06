@@ -15,14 +15,15 @@ import requests
 from pyrogram.storage.mongo_storage import MongoStorage
 
 # Updated user client with MongoDB session storage
+storage = MongoStorage(MONGO_DB_URI)
+
 user = Client(
     "sanki_user",
     api_id=API_ID,
     api_hash=API_HASH,
-    session_string=None,  # Not using string session anymore
-    storage = MongoStorage(MONGO_DB_URI, database_name="sanki_sessions")
+    session_string=None,
+    storage=storage
 )
-
 # VC Client
 vc = PyTgCalls(user)
 
