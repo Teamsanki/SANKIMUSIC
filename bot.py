@@ -1,21 +1,21 @@
 from pyrogram import Client, filters, idle
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import InputStream, AudioPiped
-from pyrogram.storage.mongo_storage import MongoStorage  # REQUIRED for MongoDB session
+from pytgcalls.types.input_stream import AudioPiped
+from pyrogram.storage import MongoStorage  # Correct import
 from spotipy import Spotify
-from pymongo import MongoClient
-from pyrogram.storage import MongoStorage
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
 
 import asyncio
 import requests
+from pymongo import MongoClient  # Required for MongoStorage
 
-# Updated user client with MongoDB session storage
+# Setup MongoDB storage
 mongo_client = MongoClient(MONGO_DB_URI)
-storage = MongoStorage(mongo_client, db_name="sanki_sessions")  # Optional: specify DB name here
+storage = MongoStorage(mongo_client, db_name="sanki_sessions")
 
+# User Client
 user = Client(
     "sanki_user",
     api_id=API_ID,
@@ -23,11 +23,23 @@ user = Client(
     session_string=None,
     storage=storage
 )
+
 # VC Client
 vc = PyTgCalls(user)
 
 # Spotify Setup
-sp = Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID, client_secret=SPOTIFY_CLIENT_SECRET))
+sp = Spotify(auth_manager=SpotifyClientCredentials(
+    client_id=SPOTIFY_CLIENT_ID,
+    client_secret=SPOTIFY_CLIENT_SECRET
+))
+
+# Bot client (separately defined)
+bot = Client(
+    "sanki_bot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
 
 @bot.on_message(filters.command("start"))
 async def start(_, message):
@@ -53,17 +65,6 @@ async def added_to_group(_, chat_member):
 
         log_text = f"🚀 **Bot Added to New Group**\n\n🏷️ Group: `{chat.title}`\n🆔 ID: `{chat.id}`\n🔗 Link: {link}"
         await bot.send_message(LOGGER_GROUP_ID, log_text)
-
-    log_text = (
-        f"🎶 **Song Played**\n\n"
-        f"👤 User: [{message.from_user.first_name}](tg://user?id={message.from_user.id})\n"
-        f"🆔 User ID: `{message.from_user.id}`\n"
-        f"🎵 Song: **{title}** by **{artist}**\n"
-        f"🏷️ Group: `{message.chat.title}`\n"
-        f"🆔 Group ID: `{message.chat.id}`"
-    )
-    await bot.send_message(LOGGER_GROUP_ID, log_text)
-
 
 @bot.on_callback_query(filters.regex("help"))
 async def help_cb(_, query):
@@ -98,11 +99,23 @@ async def play(_, message):
 
     try:
         await vc.join_group_call(
-    chat_id,
-    AudioPiped(file_path),
-    stream_type='local_stream'
-)
+            chat_id,
+            AudioPiped(file_path),
+            stream_type='local_stream'
+        )
         await message.reply(f"Now Playing: **{title}** by **{artist}**")
+
+        # Logging
+        log_text = (
+            f"🎶 **Song Played**\n\n"
+            f"👤 User: [{message.from_user.first_name}](tg://user?id={message.from_user.id})\n"
+            f"🆔 User ID: `{message.from_user.id}`\n"
+            f"🎵 Song: **{title}** by **{artist}**\n"
+            f"🏷️ Group: `{message.chat.title}`\n"
+            f"🆔 Group ID: `{message.chat.id}`"
+        )
+        await bot.send_message(LOGGER_GROUP_ID, log_text)
+
     except Exception as e:
         await message.reply(f"Failed to join VC: `{e}`")
 
@@ -114,15 +127,14 @@ async def end(_, message):
     except Exception as e:
         await message.reply(f"Error: `{e}`")
 
-from pyrogram import idle  # Make sure to import this!
-
+# Main function
 async def main():
     await user.start()
     await vc.start()
     await bot.start()
 
     print("Bot is running...")
-    await idle()  # Keeps the bot running until Ctrl+C or disconnect
+    await idle()
 
 import asyncio
 asyncio.run(main())
