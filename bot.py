@@ -20,7 +20,7 @@ user = Client(
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=None,  # Not using string session anymore
-    storage=MongoStorage(uri=MONGO_DB_URI, database_name="sanki_sessions")
+    storage = MongoStorage(MONGO_DB_URI, database_name="sanki_sessions")
 )
 
 # VC Client
