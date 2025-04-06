@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
 from pytgcalls.types.input_stream import InputStream, InputAudioStream
-from pytgcalls.types.input_stream.input_file import InputAudioFile
+from pytgcalls.types.input_stream.file import InputAudioFile
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
