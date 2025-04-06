@@ -81,13 +81,15 @@ async def end(_, message):
     except Exception as e:
         await message.reply(f"Error: `{e}`")
 
+from pyrogram import idle  # Make sure to import this!
+
 async def main():
     await user.start()
     await vc.start()
     await bot.start()
 
     print("Bot is running...")
-    await asyncio.get_event_loop().run_forever()
+    await idle()  # Keeps the bot running until Ctrl+C or disconnect
 
 import asyncio
 asyncio.run(main())
