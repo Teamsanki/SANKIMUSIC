@@ -5,7 +5,7 @@ load_dotenv()
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-USER_SESSION = os.getenv("USER_SESSION")
+STRING_SESSION = os.getenv("USER_SESSION")
 
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
