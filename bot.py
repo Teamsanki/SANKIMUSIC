@@ -1,8 +1,8 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import InputStream, InputAudioStream
-from pytgcalls.types.input_stream.input_file import InputAudioFile
+from pytgcalls.types.input_stream import InputStream
+from pytgcalls.types.input_stream.input_file import InputStreamAudioSource
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
@@ -67,10 +67,8 @@ async def play(_, message):
         await vc.join_group_call(
             chat_id,
             InputStream(
-                InputAudioStream(
-                    InputAudioFile(file_path),
-                )
-            ),
+    InputStreamAudioSource(file_path)
+),
             stream_type='local_stream'
         )
         await message.reply(f"Now Playing: **{title}** by **{artist}**")
