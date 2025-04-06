@@ -4,18 +4,17 @@ from pytgcalls import PyTgCalls
 from pytgcalls.types.input_stream import InputStream, AudioPiped
 from pyrogram.storage.mongo_storage import MongoStorage  # REQUIRED for MongoDB session
 from spotipy import Spotify
-from pyrogram.storage.mongo_storage import MongoStorage
+from pymongo import MongoClient
+from pyrogram.storage import MongoStorage
 from spotipy.oauth2 import SpotifyClientCredentials
 from config import *
 
 import asyncio
 import requests
 
-# Add this import at the top
-from pyrogram.storage.mongo_storage import MongoStorage
-
 # Updated user client with MongoDB session storage
-storage = MongoStorage(MONGO_DB_URI)
+mongo_client = MongoClient(MONGO_DB_URI)
+storage = MongoStorage(mongo_client, db_name="sanki_sessions")  # Optional: specify DB name here
 
 user = Client(
     "sanki_user",
